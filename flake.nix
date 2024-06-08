@@ -1,27 +1,58 @@
 {
-    description = "A simple NixOS flake";
+    description = "NixOS Flake configuration";
 
     inputs = {
-        # NixOS official package source, using the nixos-23.11 branch here
-        nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+        nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
+        nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-24.05";
+        nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
         home-manager.url = "github:nix-community/home-manager";
         home-manager.inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    outputs = inputs@{ nixpkgs, home-manager, ... }: {
-        # Please replace my-nixos with your hostname
+    outputs = { self, nixpkgs, nixos-wsl, home-manager, ... }: {
         nixosConfigurations = {
             destiny = nixpkgs.lib.nixosSystem {
                 system = "x86_64-linux";
                 modules = [
-                    # Import the previous configuration.nix we used,
-                    # so the old configuration file still takes effect
-                    ./configuration.nix
+                    ./modules/nixos/configuration.nix
+                    ./modules/nixos/cdubos.nix
+                    ./hardware-configuration.nix
                     home-manager.nixosModules.home-manager
                     {
                         home-manager.useGlobalPkgs = true;
                         home-manager.useUserPackages = true;
-                        home-manager.users.cdubos = import ./home.nix;
+                        home-manager.users.cdubos = { ... }: {
+                            imports = [
+                                ./modules/home-manager/home.nix
+                                ./modules/users/cdubos.nix
+                            ];
+                        };
+
+                    }
+                ];
+            };
+            destiny-wsl = nixpkgs.lib.nixosSystem {
+                system = "x86_64-linux";
+                modules = [
+                    nixos-wsl.nixosModules.default
+                    {
+                        system.stateVersion = "24.05";
+                        wsl.enable = true;
+                        wsl.defaultUser = "nixos";
+                    }
+                    ./modules/nixos/configuration.nix
+                    ./modules/nixos/wsl.nix
+
+                    home-manager.nixosModules.home-manager
+                    {
+                        home-manager.useGlobalPkgs = true;
+                        home-manager.useUserPackages = true;
+                        home-manager.users.nixos = { pkgs, config, ... }: {
+                            imports = [
+                                ./modules/home-manager/home.nix
+                                ./modules/users/wsl.nix
+                            ];
+                        };
                     }
                 ];
             };
