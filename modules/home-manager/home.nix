@@ -4,15 +4,24 @@
     home.packages = with pkgs; [
         neovim
         vim
-        git
+        bat
+
         wget
+
         zsh-history
         zsh-autosuggestions
         zsh-autocomplete
+
         nix-direnv
         direnv
-        bat
+
+        git
         gh
+
+        dive
+        podman-tui
+        docker-compose
+        arion
     ];
 
     programs.home-manager.enable = true;
