@@ -5,7 +5,6 @@
     nix.settings.experimental-features = [ "nix-command" "flakes" ];
 
     programs.zsh.enable = true;
-    programs.nix-ld.enable = true;
 
     users.defaultUserShell = pkgs.zsh;
 
