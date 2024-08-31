@@ -1,4 +1,22 @@
-{ pkgs, config, ... }: {
+{ pkgs, config, ... }: with pkgs.python312Packages; let
+    buildPythonPackage = pkgs.python312Packages.buildPythonPackage;
+    fetchPypi = pkgs.python312Packages.fetchPypi;
+
+    cruft = buildPythonPackage
+        rec {
+            pname = "cruft";
+            version = "2.15.0";
+
+            doCheck = false;
+            format = "pyproject";
+            src = fetchPypi {
+                inherit pname version;
+                sha256 = "sha256-mAKvZgN0GGVefktvMLUxWR4HYZObP/XdRdJ8Oj9Yir4=";
+            };
+            propagatedBuildInputs = [ typer cookiecutter gitpython click ];
+            nativeBuildInputs = [ poetry-core ];
+        };
+in {
 
     home.stateVersion = "24.05";
     home.packages = with pkgs; [
@@ -22,6 +40,12 @@
         podman-tui
         docker-compose
         arion
+
+        (
+            pkgs.python312.withPackages (ppkgs: with ppkgs; [
+                cruft
+            ])
+        )
     ];
 
     programs.home-manager.enable = true;
