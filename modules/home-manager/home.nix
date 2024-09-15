@@ -37,6 +37,7 @@ in {
         gh
 
         dive
+        podman
         podman-tui
         docker-compose
         arion
