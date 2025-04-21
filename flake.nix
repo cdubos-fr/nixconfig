@@ -3,7 +3,7 @@
 
     inputs = {
         nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-        nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-24.05";
+        nixpkgs-stable.url = "github:NixOS/nixpkgs/nixos-24.11";
         nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
         nix-ld.url = "github:Mic92/nix-ld";
         nix-ld.inputs.nixpkgs.follows = "nixpkgs";
@@ -38,40 +38,50 @@
                     }
                 ];
             };
-            destiny-wsl = nixpkgs.lib.nixosSystem {
-                system = "x86_64-linux";
-                modules = [
-                    nix-ld.nixosModules.nix-ld
-                    { programs.nix-ld.dev.enable = true; }
-
-                    nixos-wsl.nixosModules.default
-                    {
-                        system.stateVersion = "24.05";
-                        wsl.enable = true;
-                        wsl.defaultUser = "nixos";
-                    }
-
-                    vscode-server.nixosModules.default
-                    ({ config, pkgs, ... }: {
-                        services.vscode-server.enable = true;
-                    })
-
-                    ./modules/nixos/configuration.nix
-                    ./modules/nixos/wsl.nix
-
-                    home-manager.nixosModules.home-manager
-                    {
-                        home-manager.useGlobalPkgs = true;
-                        home-manager.useUserPackages = true;
-                        home-manager.users.nixos = { pkgs, config, ... }: {
-                            imports = [
-                                ./modules/home-manager/home.nix
-                                ./modules/users/wsl.nix
+            destiny-wsl = let
+                pkgs = import <nixpkgs> {};
+            in
+                nixpkgs.lib.nixosSystem {
+                    system = "x86_64-linux";
+                    modules = [
+                        nix-ld.nixosModules.nix-ld
+                        {
+                            programs.nix-ld.dev.enable = true;
+                            programs.nix-ld.libraries = with pkgs; [
+                                stdenv.cc.cc
+                                mesa
+                                mtdev
                             ];
-                        };
-                    }
-                ];
-            };
+                        }
+
+                        nixos-wsl.nixosModules.default
+                        {
+                            system.stateVersion = "24.11";
+                            wsl.enable = true;
+                            wsl.defaultUser = "nixos";
+                        }
+
+                        vscode-server.nixosModules.default
+                        ({ config, pkgs, ... }: {
+                            services.vscode-server.enable = true;
+                        })
+
+                        ./modules/nixos/configuration.nix
+                        ./modules/nixos/wsl.nix
+
+                        home-manager.nixosModules.home-manager
+                        {
+                            home-manager.useGlobalPkgs = true;
+                            home-manager.useUserPackages = true;
+                            home-manager.users.nixos = { pkgs, config, ... }: {
+                                imports = [
+                                    ./modules/home-manager/home.nix
+                                    ./modules/users/wsl.nix
+                                ];
+                            };
+                        }
+                    ];
+                };
         };
     };
 }

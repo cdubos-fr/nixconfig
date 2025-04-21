@@ -19,7 +19,7 @@
 
     users.defaultUserShell = pkgs.zsh;
 
-    system.stateVersion = "24.05";
+    system.stateVersion = "24.11";
     system.autoUpgrade.enable  = true;
     system.autoUpgrade.allowReboot  = true;
 
